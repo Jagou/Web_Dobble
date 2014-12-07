@@ -117,8 +117,8 @@
  }
  
  function comparaison_carte_joueur(value){
-     document.getElementById('resultat').innerHTML = "";
-      var div1 = document.getElementById('img2').innerHTML;
+    document.getElementById('resultat').innerHTML = "";
+    var div1 = document.getElementById('img2').innerHTML;
     if(div1===""){
         
         document.getElementById('img2').innerHTML = value;
