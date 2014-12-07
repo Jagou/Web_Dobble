@@ -1,9 +1,6 @@
 <h1>Cartes</h1>
 
 <table>
-    
-
-    <!-- Here is where we loop through our $posts array, printing out post info -->
 
     <?php foreach ($cards as $card): ?>
     <tr>
