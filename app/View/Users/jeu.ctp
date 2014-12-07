@@ -1,15 +1,19 @@
 
 <script type="text/javascript">
+
     function refreshCode(){   
         $('#stats_joueurs').load( document.URL +' #stats_joueurs');
+        
     }
  setInterval(function(){ refreshCode(); }, 1000)
  var interval = null;
     function refresh_nb_joueur_ok(){
         var rows = document.getElementById('stats_joueurs').getElementsByTagName('tr').length;
+        
         if(rows == 5){
+            alert("ok");
             clearInterval(interval);
-            var pioche = get_tas();
+            get_tas();
         }
     }
  interval = setInterval(function(){
@@ -17,20 +21,22 @@
  }, 1000)
  
  function get_tas(){
-      $.ajax({
+     $.ajax({
          
          url: "http://localhost:8000/cards/view_json #content",
          success: function(data){
              var div = $(data).find("#content").html();
+             alert("pioche recup");
              var json_tab= JSON.parse(div);
                 start_game(json_tab);
          }
      });
+     
  }
  
  function start_game(pioche){
     distribue_carte_debut(pioche);
-    affichage_carte_pioche(pioche);
+    get_carte_index(pioche, 4);
  }
  
  function distribue_carte_debut(pioche){
@@ -39,34 +45,18 @@
      set_nb_card_plus(id_joueur,pioche,num_carte_depart_joueur);
  }
  
- function set_nb_card_plus(id_joueur,pioche,num_carte_depart_joueur){
+function set_nb_card_plus(id_joueur,pioche,num_carte_depart_joueur){
      $.ajax({
          
          url: "http://localhost:8000/users/set_nb_card/"+id_joueur,
          success: function(){
-             var symbols = get_carte_index(pioche, num_carte_depart_joueur);
-             document.getElementById('carte_joueur').innerHTML = symbols;
-             
-         }
-     });
- }
- 
- function affichage_carte_pioche(pioche){
-     var pathArray = document.URL.split( '/' );
-     $.ajax({
-         
-         url: "http://localhost:8000/games/get_indx/"+pathArray[5],
-         success: function(data){
-             var index = $(data).find("#content").html();
-             var carte = get_carte_index(pioche,index);
-             document.getElementById('carte_pioche').innerHTML = carte;
+             get_carte_index(pioche, num_carte_depart_joueur);
              
          }
      });
  }
  
  function get_carte_index(pioche, index){
-     var symbols='';
      for(var i=0;i<pioche.length;i++){
            
         var obj = pioche[i];
@@ -74,76 +64,53 @@
             var attrName = key;
             var attrValue = obj['Card'][key];
             if(key !="id" && i==index){
+                var img = document.createElement("img");
+                img.src = '<?php echo $this->Html->url("/",true).'img/jeu/';?>'+attrValue+'.png';
                 if(index<4){
-                    symbols+=" "+"<img src='<?php echo $this->Html->url("/",true).'img/jeu/';?>"+attrValue+".png' onclick='comparaison_carte_joueur("+attrValue+")'/>";
+                    var cont = document.getElementById("carte_joueur");
+                    cont.appendChild(img);
+                    img.onclick= function(e){
+                        comparaison_carte_joueur(attrValue);
+                    }
                 }
                 else{
-                    symbols+=" "+"<img src='<?php echo $this->Html->url("/",true).'img/jeu/';?>"+attrValue+".png' onclick='comparaison_pioche("+attrValue+")'/>";
+                   var conts = document.getElementById("carte_pioche");
+                   conts.appendChild(img);
+                   img.onclick= function(e){
+                       var id = document.URL.substr(document.URL.lastIndexOf('/')+1);
+                        comparaison_carte_pioche(id, pioche, index);
+                    }
                 }
                 
             }
             
         }
-    }
-    return symbols;
- }
- 
- function comparaison_pioche(value){
-    document.getElementById('resultat').innerHTML = "";
-    var div1 = document.getElementById('img1').innerHTML;
-    if(div1===""){
-        
-        document.getElementById('img1').innerHTML = value;
-        div1 = document.getElementById('img1').innerHTML;
-        var div2 = document.getElementById('img2').innerHTML;
-        if(div2 === ""){
-            
-        }else{
-            if(div1===div2){
-                document.getElementById('resultat').innerHTML = "Bravo !";
-                document.getElementById('img1').innerHTML = "";
-                document.getElementById('img2').innerHTML = "";
-            }else{
-                document.getElementById('resultat').innerHTML = "Essaie Encore !";
-                document.getElementById('img1').innerHTML = "";
-                document.getElementById('img2').innerHTML = "";
-            }
-        }
-    }
-    else{
-        document.getElementById('img1').innerHTML = value;
-        
     }
  }
  
  function comparaison_carte_joueur(value){
-     document.getElementById('resultat').innerHTML = "";
-      var div1 = document.getElementById('img2').innerHTML;
-    if(div1===""){
-        
-        document.getElementById('img2').innerHTML = value;
-        div1 = document.getElementById('img2').innerHTML;
-        var div2 = document.getElementById('img1').innerHTML;
-        if(div2 === ""){
-            
-        }else{
-            
-            if(div1===div2){
-                document.getElementById('resultat').innerHTML = "Bravo !";
-                document.getElementById('img1').innerHTML = "";
-                document.getElementById('img2').innerHTML = "";
-                
-            }else{
-                document.getElementById('resultat').innerHTML = "Essaie Encore !";
-                document.getElementById('img1').innerHTML = "";
-                document.getElementById('img2').innerHTML = "";
+    $(".img2")[0].innerHTML= value;
+    alert("c'est fait");
+    }
+ 
+ function comparaion_carte_pioche(id,pioche,value){
+     var valeur = value;
+    var div =  $(".img2")[0].innerHTML;
+    
+    alert(div);
+    if(div===""){
+        alert("cliquez sur votre carte d'abord");
+    }
+    /*else{
+        document.getElementById("img1").innerHTML= value;
+        var div1 = document.getElementById("img1").innerHTML;
+        if(div1===div){
+            document.getElementById("resultat").innerHTML= "Bravo !";
             }
+        else{
+            document.getElementById("resultat").innerHTML= "Essaie encore !";
         }
-    }
-    else{
-        document.getElementById('img2').innerHTML = value;
-        
-    }
+    }*/
  }
  
 </script>
@@ -176,8 +143,8 @@
 <div id="carte_joueur">
 </div>
 
-<div id="comparaison">
-    <div id="img1"></div>
-    <div id="img2"></div>
-    <div id="resultat"></div>
+<div class="comparaison">
+    <div class="img1"></div>
+    <div class="img2"></div>
+    <div class="resultat"></div>
 </div>
